@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: FreeBoard-Auth-Proxy
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:7999/realms/FreeBoard}
+      client:
+        registration:
+          keycloak:
+            client-id: ${KEYCLOAK_CLIENT_ID:auth-proxy}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:L24yb6wvdYW9bo3lK8XssN6it5o4qnzG}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"
+            scope: openid, profile, email
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:7999/realms/FreeBoard}
+            user-name-attribute: preferred_username
+
+#logging:
+#  level.org.springframework.security: debug
+
+keycloak:
+  auth-server-url: ${KEYCLOAK_ISSUER_URI:http://localhost:7999}
+  client-id: ${KEYCLOAK_CLIENT_ID:auth-proxy}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET:L24yb6wvdYW9bo3lK8XssN6it5o4qnzG}
+  realm: FreeBoard
