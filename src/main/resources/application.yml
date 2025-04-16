@@ -23,6 +23,20 @@ spring:
 #    org.springframework: DEBUG
 #    org.springframework.security: TRACE
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
 keycloak:
   auth-server-url: ${KEYCLOAK_HOST:http://localhost:7999}
   client-id: ${KEYCLOAK_CLIENT_ID:auth-proxy}

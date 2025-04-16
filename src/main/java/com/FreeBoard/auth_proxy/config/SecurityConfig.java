@@ -17,9 +17,7 @@ public class SecurityConfig {
                         .ignoringRequestMatchers("/api/v1/auth/register", "/api/v1/auth/authenticate", "/api/v1/auth/refresh")
                 )
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/public/**").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/actuator/**", "/api/v1/auth/**", "/auth/**","/public/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
