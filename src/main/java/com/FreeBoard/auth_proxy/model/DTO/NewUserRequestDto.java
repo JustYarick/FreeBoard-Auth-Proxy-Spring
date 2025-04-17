@@ -1,4 +1,4 @@
-package com.FreeBoard.auth_proxy.DTO;
+package com.FreeBoard.auth_proxy.model.DTO;
 
 import lombok.Data;
 
@@ -8,8 +8,6 @@ import java.util.List;
 public class NewUserRequestDto {
     private String username;
     private String email;
-    private String firstName;
-    private String lastName;
     private boolean enabled = true;
     private List<Credentials> credentials;
 

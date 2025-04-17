@@ -17,6 +17,16 @@ spring:
           keycloak:
             issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:7999/realms/FreeBoard}
             user-name-attribute: preferred_username
+  datasource:
+    url: jdbc:postgresql://${DATASOURCE_HOST:localhost}:5432/users
+    username: ${DATASOURCE_USERNAME:postgres}
+    password: ${DATASOURCE_PASSWORD:example}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+  kafka:
+    bootstrap-servers: ${KAFKA_SERVER_HOST:localhost}:9092
 
 #logging:
 #  level:

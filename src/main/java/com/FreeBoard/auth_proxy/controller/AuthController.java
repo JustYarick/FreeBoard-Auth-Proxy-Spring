@@ -1,9 +1,9 @@
 package com.FreeBoard.auth_proxy.controller;
 
-import com.FreeBoard.auth_proxy.DTO.AccessTokenResponse;
-import com.FreeBoard.auth_proxy.DTO.AuthRequestDto;
-import com.FreeBoard.auth_proxy.DTO.NewUserRequestDto;
-import com.FreeBoard.auth_proxy.client.KeyCloakClient;
+import com.FreeBoard.auth_proxy.model.DTO.AccessTokenResponse;
+import com.FreeBoard.auth_proxy.model.DTO.AuthRequestDto;
+import com.FreeBoard.auth_proxy.model.DTO.NewUserRequestDto;
+import com.FreeBoard.auth_proxy.service.KeyCloakClient;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

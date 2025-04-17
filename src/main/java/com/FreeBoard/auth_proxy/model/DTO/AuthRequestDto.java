@@ -1,4 +1,4 @@
-package com.FreeBoard.auth_proxy.DTO;
+package com.FreeBoard.auth_proxy.model.DTO;
 
 import lombok.Data;
 
