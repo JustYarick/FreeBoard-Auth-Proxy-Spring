@@ -2,10 +2,13 @@ package com.FreeBoard.auth_proxy.service;
 
 import com.FreeBoard.auth_proxy.exception.ExceptionClass.InvalidCredential;
 import com.FreeBoard.auth_proxy.exception.ExceptionClass.KeycalokException;
+import com.FreeBoard.auth_proxy.exception.ExceptionClass.UserAlreadyExistException;
 import com.FreeBoard.auth_proxy.model.DTO.ChangeEmailRequest;
 import com.FreeBoard.auth_proxy.model.DTO.ChangePasswordRequest;
+import com.FreeBoard.auth_proxy.model.DTO.CredentialResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,10 +19,16 @@ public class UserCredentialsService {
 
     private final KeyCloakClient keyCloakClient;
 
-    public String getUserEmail() {
+    public CredentialResponse getUserEmail() {
 
         String userId = SecurityContextService.getCurrentUser();
-        return keyCloakClient.getUserById(userId).getEmail();
+        return new CredentialResponse(keyCloakClient.getUserById(userId).getEmail(), "email");
+    }
+
+    public CredentialResponse getUsername() {
+
+        String userId = SecurityContextService.getCurrentUser();
+        return new CredentialResponse(keyCloakClient.getUserById(userId).getUsername(), "username");
     }
 
     public Void changePassword(ChangePasswordRequest request) {
@@ -48,14 +57,10 @@ public class UserCredentialsService {
         return null;
     }
 
-    public String getUsername() {
-        String userId = SecurityContextService.getCurrentUser();
-        return keyCloakClient.getUserById(userId).getUsername();
-    }
-
     public Void changeUsername(String username) {
-        String userId = SecurityContextService.getCurrentUser();
-        keyCloakClient.getUserById(userId).setUsername(username);
+        keyCloakClient.updateUsername(
+                SecurityContextService.getCurrentUser(),
+                username);
         return null;
     }
 }

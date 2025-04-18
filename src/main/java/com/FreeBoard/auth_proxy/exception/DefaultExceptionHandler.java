@@ -111,6 +111,23 @@ public class DefaultExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiError> handleException(
+            MethodArgumentNotValidException e,
+            HttpServletRequest request
+    ) {
+
+        ApiError apiError = new ApiError(
+                request.getRequestURI(),
+                "Validation error",
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()
+        );
+
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
+
     @ExceptionHandler(InvalidCredential.class)
     public ResponseEntity<ApiError> handleException(
             InvalidCredential e,
@@ -124,14 +141,14 @@ public class DefaultExceptionHandler {
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-            errors.put(error.getField(), error.getDefaultMessage())
-        );
-        return ResponseEntity.badRequest().body(errors);
-    }
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        Map<String, String> errors = new HashMap<>();
+//        ex.getBindingResult().getFieldErrors().forEach(error ->
+//            errors.put(error.getField(), error.getDefaultMessage())
+//        );
+//        return ResponseEntity.badRequest().body(errors);
+//    }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiError> handleException(

@@ -1,6 +1,7 @@
 package com.FreeBoard.auth_proxy.service;
 
 import com.FreeBoard.auth_proxy.exception.ExceptionClass.KeycalokException;
+import com.FreeBoard.auth_proxy.exception.ExceptionClass.UserAlreadyExistException;
 import com.FreeBoard.auth_proxy.model.DTO.AccessTokenResponse;
 import com.FreeBoard.auth_proxy.model.DTO.AuthRequestDto;
 import com.FreeBoard.auth_proxy.model.DTO.NewUserEventDTO;
@@ -11,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -52,7 +55,7 @@ public class KeyCloakClient {
 
     public UserRepresentation getUserById(String userId) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + getAdminToken()); // Используем токен администратора
+        headers.setBearerAuth(getAdminToken());
 
         HttpEntity<Void> entity = new HttpEntity<>(headers);
         String url = String.format("%s/admin/realms/%s/users/%s", keyCloakUrl, realm, userId);
@@ -93,7 +96,7 @@ public class KeyCloakClient {
     public String createUserInKeycloak(NewUserRequestDto userRequest) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.set("Authorization", "Bearer " + getAdminToken());
+        headers.setBearerAuth(getAdminToken());
 
         HttpEntity<NewUserRequestDto> entity = new HttpEntity<>(userRequest, headers);
         String url = String.format("%s/admin/realms/%s/users", keyCloakUrl, realm);
@@ -147,13 +150,13 @@ public class KeyCloakClient {
     }
 
     private String getAuthUrl() {
-        return UriComponentsBuilder.newInstance()
-                .scheme("http")
-                .host("localhost")
-                .port(7999)
+        return UriComponentsBuilder.fromUri(
+                URI.create(keyCloakUrl)
+                )
                 .pathSegment("realms", realm, "protocol", "openid-connect", "token")
                 .toUriString();
     }
+
 
     public boolean isPasswordCorrect(String userId, String password) {
         try {
@@ -210,9 +213,11 @@ public class KeyCloakClient {
 
         try {
             restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
+        } catch (HttpClientErrorException.Conflict e) {
+            throw new UserAlreadyExistException("User already exists");
         } catch (Exception e) {
             log.error("Failed to update email for user {}: {}", userId, e.getMessage());
-            throw new RuntimeException("Email update failed", e);
+            throw new KeycalokException("Email update failed", e);
         }
     }
 
@@ -230,6 +235,25 @@ public class KeyCloakClient {
         } catch (Exception e) {
             log.error("Failed to change password for user {}: {}", userId, e.getMessage());
             throw new KeycalokException("Failed to change password");
+        }
+    }
+
+    public void updateUsername(String userId, String newUsername) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + getAdminToken());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> usernameData = new HashMap<>();
+        usernameData.put("username", newUsername);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(usernameData, headers);
+        String url = String.format("%s/admin/realms/%s/users/%s", keyCloakUrl, realm, userId);
+
+        try {
+            restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
+        } catch (Exception e) {
+            log.error("Failed to change username for user {}: {}", userId, e.getMessage());
+            throw new KeycalokException("Failed to change username");
         }
     }
 }
