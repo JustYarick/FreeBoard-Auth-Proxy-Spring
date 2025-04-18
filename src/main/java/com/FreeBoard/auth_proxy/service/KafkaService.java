@@ -19,12 +19,12 @@ public class KafkaService {
     public CompletableFuture<SendResult<String, NewUserEventDTO>> sendNewUserEvent(NewUserEventDTO event) {
         CompletableFuture<SendResult<String, NewUserEventDTO>> future = newUserKafkaTemplate.send("NewUser", event);
 
-        future.thenAccept(result -> {
+        future.thenAccept(result ->
             log.info("NewUserEvent sent: topic={}, partition={}, offset={}",
                     result.getRecordMetadata().topic(),
                     result.getRecordMetadata().partition(),
-                    result.getRecordMetadata().offset());
-        }).exceptionally(ex -> {
+                    result.getRecordMetadata().offset())
+        ).exceptionally(ex -> {
             log.error("Failed to send NewUserEvent", ex);
             return null;
         });

@@ -9,13 +9,13 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopicConfig {
 
     @Bean
-    public NewTopic NewUSerTopic() {
+    public NewTopic newUSerTopic() {
         return TopicBuilder.name("NewUser")
                 .build();
     }
 
     @Bean
-    public NewTopic LoginUserTopic() {
+    public NewTopic loginUserTopic() {
         return TopicBuilder.name("LoginUser")
                 .build();
     }
