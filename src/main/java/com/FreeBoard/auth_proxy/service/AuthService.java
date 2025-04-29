@@ -1,12 +1,12 @@
 package com.FreeBoard.auth_proxy.service;
 
 import com.FreeBoard.auth_proxy.exception.ExceptionClass.SagaFailException;
-import com.FreeBoard.auth_proxy.model.DTO.AccessTokenResponse;
 import com.FreeBoard.auth_proxy.model.DTO.AuthRequestDto;
 import com.FreeBoard.auth_proxy.model.DTO.NewUserEventDTO;
 import com.FreeBoard.auth_proxy.model.DTO.NewUserRequestDto;
 import com.FreeBoard.auth_proxy.model.entity.AuthSagaEntity;
 import lombok.AllArgsConstructor;
+import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -21,7 +21,7 @@ public class AuthService {
     private final KafkaService kafkaService;
     private final AuthSagaService authSagaService;
 
-    public void registerUser(NewUserRequestDto userRequest) {
+    public AccessTokenResponse registerUser(NewUserRequestDto userRequest) {
         AuthSagaEntity saga = authSagaService.initAuthSaga();
         UUID sagaId = saga.getId();
 
@@ -43,6 +43,8 @@ public class AuthService {
             authSagaService.markAsFailed(sagaId, e.getMessage());
             throw new SagaFailException("Registration process failed", e);
         }
+        AuthRequestDto authRequestDto = new AuthRequestDto(userRequest.getUsername(), userRequest.getCredentials().getFirst().getValue());
+        return authenticateUser(authRequestDto);
     }
 
     public AccessTokenResponse authenticateUser(AuthRequestDto authRequestDto) {

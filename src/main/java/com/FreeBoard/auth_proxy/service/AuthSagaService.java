@@ -4,11 +4,13 @@ import com.FreeBoard.auth_proxy.model.SagaStatus;
 import com.FreeBoard.auth_proxy.model.entity.AuthSagaEntity;
 import com.FreeBoard.auth_proxy.repository.SagaRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class AuthSagaService {
@@ -48,25 +50,26 @@ public class AuthSagaService {
     public AuthSagaEntity markAsUserCreated(UUID sagaId, UUID userId) {
         AuthSagaEntity saga = getAuthSaga(sagaId);
 
+        log.info("User for saga:{} successfully registered", sagaId);
         saga.setUserId(userId.toString());
         saga.setStatus(SagaStatus.USER_CREATED);
         saga.setCreatedAt(LocalDateTime.now());
         return sagaRepository.save(saga);
     }
 
-    public void markAsProfileCreated(UUID sagaId) {
-        AuthSagaEntity saga = sagaRepository.findById(sagaId)
-                .orElseThrow(() -> new IllegalStateException("Saga not found"));
+    public AuthSagaEntity markAsProfileCreated(UUID sagaId) {
+        AuthSagaEntity saga = getAuthSaga(sagaId);
 
-        if (saga.getStatus() == SagaStatus.USER_CREATED) {
-            saga.setStatus(SagaStatus.PROFILE_CREATED);
-            saga.setUpdatedAt(LocalDateTime.now());
-            sagaRepository.save(saga);
-        }
+        log.info("Profile for saga:{} successfully created", sagaId);
+        saga.setStatus(SagaStatus.PROFILE_CREATED);
+        saga.setUpdatedAt(LocalDateTime.now());
+        return sagaRepository.save(saga);
     }
 
     public AuthSagaEntity markAsFailed(UUID sagaId, String errorMessage) {
         AuthSagaEntity saga = getAuthSaga(sagaId);
+
+        log.error("Saga: {} failed error: {}", sagaId, errorMessage);
         saga.setStatus(SagaStatus.FAILED);
         saga.setErrorMessage(errorMessage);
         saga.setUpdatedAt(LocalDateTime.now());

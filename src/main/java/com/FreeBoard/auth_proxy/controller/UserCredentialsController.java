@@ -5,6 +5,8 @@ import com.FreeBoard.auth_proxy.model.DTO.ChangePasswordRequest;
 import com.FreeBoard.auth_proxy.model.DTO.CredentialResponse;
 import com.FreeBoard.auth_proxy.service.UserCredentialsService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -29,7 +31,7 @@ public class UserCredentialsController {
     }
 
     @PatchMapping("/username")
-    public ResponseEntity<Void> changeUsername(@RequestBody @Valid String username) {
+    public ResponseEntity<Void> changeUsername(@RequestBody @Valid @NotBlank @Size(min = 4) String username) {
         return ResponseEntity.ok(userCredentialsService.changeUsername(username));
     }
 

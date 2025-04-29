@@ -18,7 +18,6 @@ public class KafkaListeners {
 
     @KafkaListener(topics = "profileCreated", groupId = "Users")
     void profileCreated(ProfileCreatedEventDTO profileCreatedEventDTO) {
-        log.info("Profile for {} successfully created", profileCreatedEventDTO.getUserId());
         authSagaService.markAsProfileCreated(profileCreatedEventDTO.getSagaId());
 
         authSagaService.updateStatuses(profileCreatedEventDTO.getSagaId(), SagaStatus.COMPLETED);
@@ -26,11 +25,6 @@ public class KafkaListeners {
 
     @KafkaListener(topics = "profileFailed", groupId = "Users")
     void profileFailed(ProfileFailedEventDTO profileFailedEventDTO) {
-        log.error("Error creation profile sagaId={} userId={} error={} time={}",
-                profileFailedEventDTO.getSagaId(),
-                profileFailedEventDTO.getUserId(),
-                profileFailedEventDTO.getError(),
-                profileFailedEventDTO.getTimestamp());
         authSagaService.markAsFailed(profileFailedEventDTO.getSagaId(), "Profile creation failed");
     }
 }

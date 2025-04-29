@@ -2,22 +2,14 @@ package com.FreeBoard.auth_proxy.service;
 
 import com.FreeBoard.auth_proxy.exception.ExceptionClass.KeycalokException;
 import com.FreeBoard.auth_proxy.exception.ExceptionClass.UserAlreadyExistException;
-import com.FreeBoard.auth_proxy.model.DTO.AccessTokenResponse;
-import com.FreeBoard.auth_proxy.model.DTO.AuthRequestDto;
-import com.FreeBoard.auth_proxy.model.DTO.NewUserEventDTO;
+import com.FreeBoard.auth_proxy.exception.ExceptionClass.UserNotFoundException;
 import com.FreeBoard.auth_proxy.model.DTO.NewUserRequestDto;
-import com.FreeBoard.auth_proxy.model.entity.AuthSagaEntity;
-import jakarta.annotation.PostConstruct;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.keycloak.OAuth2Constants;
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.KeycloakBuilder;
-import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.AccessTokenResponse;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -28,10 +20,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @Component
 @Slf4j
+@Setter
 public class KeyCloakClient {
 
     @Value("${keycloak.auth-server-url}")
@@ -69,8 +61,11 @@ public class KeyCloakClient {
 
         if (response.getStatusCode().is2xxSuccessful()) {
             return response.getBody();
-        } else {
-            throw new UsernameNotFoundException("User not found: " + userId);
+        } else if (response.getStatusCode().is4xxClientError()) {
+            throw  new UserNotFoundException("User not found");
+        }
+        else {
+            throw new KeycalokException("Error getting user: " + userId);
         }
     }
 
@@ -141,7 +136,7 @@ public class KeyCloakClient {
         );
 
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-            return response.getBody().getAccessToken();
+            return response.getBody().getToken();
         } else {
             log.error("Failed to obtain admin token. Status: {}, Body: {}",
                     response.getStatusCode(), response.getBody());
@@ -213,12 +208,16 @@ public class KeyCloakClient {
 
         try {
             restTemplate.exchange(url, HttpMethod.PUT, entity, Void.class);
-        } catch (HttpClientErrorException.Conflict e) {
-            throw new UserAlreadyExistException("User already exists");
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.CONFLICT) {
+                throw new UserAlreadyExistException("User already exists");
+            }
+            throw new KeycalokException("Email update failed", e);
         } catch (Exception e) {
             log.error("Failed to update email for user {}: {}", userId, e.getMessage());
             throw new KeycalokException("Email update failed", e);
         }
+
     }
 
 
